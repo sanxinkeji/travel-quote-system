@@ -86,7 +86,6 @@ npm test
 项目包含宝塔面板、Nginx、PHP 8.2 和 MySQL 8.0 的完整部署说明：
 
 - [宝塔面板部署教程](BAOTA_DEPLOYMENT.md)
-- [在线演示 / Live Demo](https://baojia.dclvyou.com)
 
 生成不包含 `.env`、数据库、测试和开发缓存的发布包：
 
