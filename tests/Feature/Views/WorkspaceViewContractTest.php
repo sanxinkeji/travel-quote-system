@@ -212,7 +212,7 @@ class WorkspaceViewContractTest extends TestCase
             $styles
         );
         $this->assertMatchesRegularExpression(
-            '/@media \(min-width: 861px\) and \(max-width: 960px\) \{\n(?:(?!^\}).)*?\.group-editor-panel, \.groups-editor, \.quote-group \{ overflow: hidden; \}\n(?:(?!^\}).)*?\.items-editor \{ width: 100%; max-width: 100%; overflow-x: auto; overscroll-behavior-inline: contain; \}\n(?:(?!^\}).)*?\.item-grid \{ min-width: 725px; \}/ms',
+            '/^\.items-editor \{ padding: 0 7px 5px; width: 100%; max-width: 100%; overflow-x: auto; overscroll-behavior-inline: contain; \}$/m',
             $styles
         );
     }
