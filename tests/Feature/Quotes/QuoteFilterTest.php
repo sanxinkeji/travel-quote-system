@@ -86,6 +86,46 @@ class QuoteFilterTest extends TestCase
         $response->assertViewHas('quotes', fn ($quotes): bool => $quotes->count() === 1 && $quotes->first()->is($matching));
     }
 
+    public function test_one_day_quote_uses_the_trip_type_label_on_the_history_list(): void
+    {
+        $user = User::factory()->create([
+            'username' => fake()->unique()->userName(),
+            'role' => 'employee',
+            'is_active' => true,
+        ]);
+        $this->quote($user, [
+            'title' => 'One day quote',
+            'duration_days' => 1,
+            'nights' => 0,
+        ]);
+
+        $response = $this->actingAs($user)->get(route('quotes.index'));
+
+        $response->assertOk();
+        $response->assertSeeText('一日游');
+        $response->assertDontSeeText('1天0夜');
+    }
+
+    public function test_one_day_quote_uses_the_trip_type_label_on_the_detail_page(): void
+    {
+        $user = User::factory()->create([
+            'username' => fake()->unique()->userName(),
+            'role' => 'employee',
+            'is_active' => true,
+        ]);
+        $quote = $this->quote($user, [
+            'title' => 'One day quote',
+            'duration_days' => 1,
+            'nights' => 0,
+        ]);
+
+        $response = $this->actingAs($user)->get(route('quotes.show', $quote));
+
+        $response->assertOk();
+        $response->assertSeeText('一日游');
+        $response->assertDontSeeText('1天0夜');
+    }
+
     public function test_admin_sees_the_delete_action_on_the_historical_quote_list(): void
     {
         $owner = User::factory()->create([

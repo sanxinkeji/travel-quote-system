@@ -108,4 +108,17 @@ class Quote extends Model
             return $priority->concat($items->diff($priority))->take(3)->implode(' + ');
         });
     }
+
+    protected function tripType(): Attribute
+    {
+        return Attribute::get(function (): string {
+            return match ($this->duration_days) {
+                1 => '一日游',
+                2 => '两天一夜',
+                3 => '三天两夜',
+                4 => '四天三夜',
+                default => sprintf('%d天%d夜', $this->duration_days ?? 0, $this->nights ?? 0),
+            };
+        });
+    }
 }

@@ -53,7 +53,7 @@
                     <td><span class="table-title">{{ $quote->title ?? $quote->customer_title ?? '未命名报价' }}</span><span class="table-sub">{{ $quote->customer_name ?? $quote->source_file ?? '' }}</span></td>
                     <td>{{ $quote->year ?? optional($quote->quote_date ?? null)->format('Y') ?? '-' }}.{{ str_pad((string) ($quote->month ?? optional($quote->quote_date ?? null)->format('n') ?? '-'), 2, '0', STR_PAD_LEFT) }}</td>
                     <td>{{ $quote->destination ?? '-' }}</td>
-                    <td>{{ $quote->trip_type ?? (($quote->duration_days ?? 0).'天'.max((int) ($quote->nights ?? ($quote->duration_days ?? 1) - 1), 0).'夜') }}</td>
+                    <td>{{ $quote->trip_type }}</td>
                     <td>{{ $people }}人</td>
                     <td class="money">¥{{ number_format($people > 0 ? $total / $people : 0, 0) }}</td>
                     <td class="money strong">¥{{ number_format($total, 2) }}</td>

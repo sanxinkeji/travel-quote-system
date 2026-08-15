@@ -8,6 +8,13 @@
     $field = static function ($record, string $key, $default = null) {
         return is_array($record) ? ($record[$key] ?? $default) : ($record->{$key} ?? $default);
     };
+    $numberInput = static function ($value): string {
+        if ($value === null || $value === '') {
+            return '';
+        }
+
+        return rtrim(rtrim(number_format((float) $value, 2, '.', ''), '0'), '.');
+    };
     $isCopy = $isCopy ?? false;
     $updateUrl = $formAction ?? (isset($quote) && $quote->exists ? route('quotes.update', $quote) : route('quotes.store'));
 @endphp
@@ -119,7 +126,7 @@
                                         <input name="groups[{{ $groupIndex }}][items][{{ $itemIndex }}][time]" value="{{ $field($item, 'time', '') }}" aria-label="预估时段">
                                         <input name="groups[{{ $groupIndex }}][items][{{ $itemIndex }}][name]" value="{{ $field($item, 'name', '') }}" aria-label="项目名称" data-item-name required>
                                         <input name="groups[{{ $groupIndex }}][items][{{ $itemIndex }}][unit]" value="{{ $field($item, 'unit', '') }}" aria-label="单位" data-item-unit>
-                                        <input type="number" step="0.01" name="groups[{{ $groupIndex }}][items][{{ $itemIndex }}][quantity]" value="{{ $field($item, 'quantity', 0) }}" aria-label="数量" data-quantity>
+                                        <input type="number" step="0.01" name="groups[{{ $groupIndex }}][items][{{ $itemIndex }}][quantity]" value="{{ $numberInput($field($item, 'quantity', 0)) }}" aria-label="数量" data-quantity>
                                         <input type="number" step="0.01" name="groups[{{ $groupIndex }}][items][{{ $itemIndex }}][unit_price]" value="{{ $field($item, 'unit_price', 0) }}" aria-label="单价" data-unit-price {{ $isTax ? 'readonly' : '' }}>
                                         <input type="number" step="0.01" name="groups[{{ $groupIndex }}][items][{{ $itemIndex }}][actual_total]" value="{{ $field($item, 'actual_total', '') }}" aria-label="实际总价" data-actual-total {{ $isTax ? 'readonly' : '' }}>
                                         <input name="groups[{{ $groupIndex }}][items][{{ $itemIndex }}][note]" value="{{ $field($item, 'note', '') }}" aria-label="备注" placeholder="{{ $isTax ? '税基自动汇总 / 税额自动计算' : '' }}">

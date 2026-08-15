@@ -24,7 +24,7 @@
 <section class="detail-meta-strip">
     <div><span>报价年月</span><strong>{{ $quote->year ?? '-' }}年{{ $quote->month ?? '-' }}月</strong></div>
     <div><span>目的地</span><strong>{{ $quote->destination ?? '-' }}</strong></div>
-    <div><span>行程类型</span><strong>{{ $quote->duration_days ?? 0 }}天{{ $quote->nights ?? 0 }}夜</strong></div>
+    <div><span>行程类型</span><strong>{{ $quote->trip_type }}</strong></div>
     <div><span>报价人数</span><strong>{{ $quote->people_count ?? 0 }}人</strong></div>
     <div><span>创建人</span><strong>{{ $quote->createdBy?->name ?? $quote->creator?->name ?? '-' }}</strong></div>
     <div><span>更新时间</span><strong>{{ $quote->updated_at?->format('Y-m-d H:i') ?? '-' }}</strong></div>
