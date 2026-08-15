@@ -199,16 +199,16 @@ class WorkspaceViewContractTest extends TestCase
         );
     }
 
-    public function test_quote_editor_gives_notes_more_space_than_compact_value_columns(): void
+    public function test_quote_editor_keeps_time_compact_and_value_columns_usable(): void
     {
         $styles = file_get_contents(public_path('css/workspace.css'));
 
         $this->assertStringContainsString(
-            'grid-template-columns: 24px 25px minmax(82px,.55fr) minmax(145px,1.25fr) minmax(58px,.45fr) 48px 72px 82px minmax(170px,1.65fr) 28px;',
+            'grid-template-columns: 24px 25px 108px minmax(145px,1.25fr) minmax(58px,.45fr) 64px 96px 108px minmax(170px,1.65fr) 28px;',
             $styles
         );
         $this->assertStringContainsString(
-            'grid-template-columns: 22px 23px minmax(80px,.5fr) minmax(130px,1.15fr) 55px 48px 68px 78px minmax(150px,1.45fr) 27px;',
+            'grid-template-columns: 22px 23px 100px minmax(130px,1.15fr) 55px 60px 88px 100px minmax(150px,1.45fr) 27px;',
             $styles
         );
         $this->assertMatchesRegularExpression(
