@@ -211,6 +211,10 @@ class WorkspaceViewContractTest extends TestCase
             'grid-template-columns: 22px 23px minmax(80px,.5fr) minmax(130px,1.15fr) 55px 48px 68px 78px minmax(150px,1.45fr) 27px;',
             $styles
         );
+        $this->assertMatchesRegularExpression(
+            '/@media \(min-width: 861px\) and \(max-width: 960px\) \{\n(?:(?!^\}).)*?\.group-editor-panel, \.groups-editor, \.quote-group \{ overflow: hidden; \}\n(?:(?!^\}).)*?\.items-editor \{ width: 100%; max-width: 100%; overflow-x: auto; overscroll-behavior-inline: contain; \}\n(?:(?!^\}).)*?\.item-grid \{ min-width: 725px; \}/ms',
+            $styles
+        );
     }
 
     public function test_spreadsheet_export_contains_document_metadata_details_and_totals(): void

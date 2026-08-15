@@ -287,6 +287,12 @@ input[readonly] { cursor: not-allowed; }
     .table-sub { display: none; }
 }
 
+@media (min-width: 861px) and (max-width: 960px) {
+    .group-editor-panel, .groups-editor, .quote-group { overflow: hidden; }
+    .items-editor { width: 100%; max-width: 100%; overflow-x: auto; overscroll-behavior-inline: contain; }
+    .item-grid { min-width: 725px; }
+}
+
 @media (max-width: 860px) {
     .topbar { padding: 0 14px; }.role-label, .account-name { display: none; }
     .workspace { display: block; }.sidebar { position: static; width: 100%; height: auto; padding: 8px 10px; border-right: 0; border-bottom: 1px solid var(--line); }.nav-section { display: flex; gap: 5px; }.nav-label, .sidebar-foot { display: none; }.nav-item { margin: 0; }
