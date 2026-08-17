@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Models\Quote;
+use App\Models\User;
 use Illuminate\Database\Eloquent\Builder;
 
 class QuoteFilter
@@ -34,12 +35,19 @@ class QuoteFilter
             });
     }
 
-    public function history(array $filters): Builder
+    public function history(array $filters, User $viewer): Builder
     {
         return $this->apply(
-            Quote::query()->historical()->with(['createdBy', 'groups.items']),
+            Quote::query()->historical()->with(['createdBy', 'groups.items'])
+                ->when($this->scope($filters['scope'] ?? null) === 'mine',
+                    fn (Builder $query) => $query->where('created_by', $viewer->id)),
             $filters
         );
+    }
+
+    private function scope(mixed $value): string
+    {
+        return in_array($value, ['all', 'mine'], true) ? $value : 'all';
     }
 
     private function integer(mixed $value): ?int

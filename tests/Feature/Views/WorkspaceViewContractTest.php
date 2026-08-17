@@ -217,6 +217,20 @@ class WorkspaceViewContractTest extends TestCase
         );
     }
 
+    public function test_quote_library_exposes_history_and_personal_scope_switches(): void
+    {
+        $index = file_get_contents(resource_path('views/quotes/index.blade.php'));
+        $styles = file_get_contents(public_path('css/workspace.css'));
+
+        $this->assertStringContainsString('quote-scope-switch', $index);
+        $this->assertStringContainsString('历史报价大厅', $index);
+        $this->assertStringContainsString('自用报价', $index);
+        $this->assertStringContainsString('scope', $index);
+        $this->assertStringContainsString('aria-current', $index);
+        $this->assertStringContainsString('.quote-scope-switch', $styles);
+        $this->assertStringContainsString('.quote-scope-option.active', $styles);
+    }
+
     public function test_spreadsheet_export_contains_document_metadata_details_and_totals(): void
     {
         $document = file_get_contents(resource_path('views/quotes/_document.blade.php'));

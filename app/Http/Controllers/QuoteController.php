@@ -20,11 +20,11 @@ class QuoteController extends Controller
     {
         Gate::authorize('viewAny', Quote::class);
         $filters = $request->only([
-            'year', 'month', 'destination', 'duration', 'people_range', 'budget_min', 'budget_max', 'keyword',
+            'scope', 'year', 'month', 'destination', 'duration', 'people_range', 'budget_min', 'budget_max', 'keyword',
         ]);
 
         return view('quotes.index', [
-            'quotes' => $filter->history($filters)->latest('updated_at')->paginate(20)->withQueryString(),
+            'quotes' => $filter->history($filters, $request->user())->latest('updated_at')->paginate(20)->withQueryString(),
             'filters' => $filters,
         ]);
     }

@@ -86,6 +86,52 @@ class QuoteFilterTest extends TestCase
         $response->assertViewHas('quotes', fn ($quotes): bool => $quotes->count() === 1 && $quotes->first()->is($matching));
     }
 
+    public function test_scope_mine_returns_only_the_current_users_historical_quotes(): void
+    {
+        $owner = User::factory()->create([
+            'role' => 'employee',
+            'is_active' => true,
+        ]);
+        $other = User::factory()->create([
+            'role' => 'employee',
+            'is_active' => true,
+        ]);
+        $mine = $this->quote($owner, ['title' => 'Mine']);
+        $this->quote($other, ['title' => 'Other']);
+        $this->quote($owner, ['title' => 'Draft', 'status' => 'draft']);
+
+        $response = $this->actingAs($owner)->get(route('quotes.index', ['scope' => 'mine']));
+
+        $response->assertOk();
+        $response->assertViewHas('quotes', fn ($quotes): bool => $quotes->count() === 1 && $quotes->first()->is($mine));
+    }
+
+    public function test_missing_or_invalid_scope_returns_all_historical_quotes(): void
+    {
+        $owner = User::factory()->create([
+            'role' => 'employee',
+            'is_active' => true,
+        ]);
+        $other = User::factory()->create([
+            'role' => 'employee',
+            'is_active' => true,
+        ]);
+        $mine = $this->quote($owner, ['title' => 'Mine']);
+        $otherQuote = $this->quote($other, ['title' => 'Other']);
+        $this->quote($owner, ['title' => 'Draft', 'status' => 'draft']);
+
+        foreach ([[], ['scope' => 'unexpected']] as $query) {
+            $response = $this->actingAs($owner)->get(route('quotes.index', $query));
+
+            $response->assertOk();
+            $response->assertViewHas('quotes', function ($quotes) use ($mine, $otherQuote): bool {
+                return $quotes->count() === 2
+                    && $quotes->contains(fn (Quote $quote): bool => $quote->is($mine))
+                    && $quotes->contains(fn (Quote $quote): bool => $quote->is($otherQuote));
+            });
+        }
+    }
+
     public function test_one_day_quote_uses_the_trip_type_label_on_the_history_list(): void
     {
         $user = User::factory()->create([

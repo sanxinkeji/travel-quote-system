@@ -6,6 +6,9 @@
 @php
     $quoteRows = $quotes ?? collect();
     $currentFilters = $filters ?? request()->all();
+    $scope = $currentFilters['scope'] ?? 'all';
+    $scope = in_array($scope, ['all', 'mine'], true) ? $scope : 'all';
+    $scopeLabels = ['all' => '历史报价大厅', 'mine' => '自用报价'];
 @endphp
 <section class="page-toolbar">
     <div>
@@ -17,8 +20,19 @@
     @endif
 </section>
 
+<nav class="quote-scope-switch" aria-label="报价范围">
+    @foreach($scopeLabels as $value => $label)
+        <a class="quote-scope-option @if($scope === $value) active @endif"
+           href="{{ route('quotes.index', array_merge($currentFilters, ['scope' => $value])) }}"
+           @if($scope === $value) aria-current="page" @endif>
+            {{ $label }}
+        </a>
+    @endforeach
+</nav>
+
 <section class="panel filter-panel">
     <form class="quote-filters" method="GET" action="{{ Route::has('quotes.index') ? route('quotes.index') : url('/quotes') }}">
+        <input type="hidden" name="scope" value="{{ $scope }}">
         <label><span>年份</span><select name="year"><option value="">全部年份</option>@foreach(range((int) date('Y') + 1, 2020) as $year)<option value="{{ $year }}" @selected(($currentFilters['year'] ?? '') == $year)>{{ $year }}年</option>@endforeach</select></label>
         <label><span>月份</span><select name="month"><option value="">全部月份</option>@foreach(range(1, 12) as $month)<option value="{{ $month }}" @selected(($currentFilters['month'] ?? '') == $month)>{{ $month }}月</option>@endforeach</select></label>
         <label><span>目的地</span><input name="destination" value="{{ $currentFilters['destination'] ?? '' }}" placeholder="如：惠州"></label>
