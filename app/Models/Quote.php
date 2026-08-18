@@ -13,6 +13,18 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 #[UsePolicy(QuotePolicy::class)]
 class Quote extends Model
 {
+    public const SALES_FOLLOWING = 'following';
+
+    public const SALES_OTHER = 'other';
+
+    public const SALES_WON = 'won';
+
+    public const SALES_STATUS_LABELS = [
+        self::SALES_FOLLOWING => '跟进中',
+        self::SALES_OTHER => '其他',
+        self::SALES_WON => '已成交',
+    ];
+
     protected $fillable = [
         'created_by',
         'source_quote_id',
@@ -36,6 +48,8 @@ class Quote extends Model
         'source_name',
         'source_url',
         'status',
+        'sales_status',
+        'won_at',
     ];
 
     protected function casts(): array
@@ -49,6 +63,7 @@ class Quote extends Model
             'budget_per_person' => 'decimal:2',
             'total_amount' => 'decimal:2',
             'per_person_amount' => 'decimal:2',
+            'won_at' => 'datetime',
         ];
     }
 
@@ -70,6 +85,19 @@ class Quote extends Model
     public function scopeHistorical(Builder $query): Builder
     {
         return $query->where('status', 'historical');
+    }
+
+    public function scopeWon(Builder $query): Builder
+    {
+        return $query
+            ->where('sales_status', self::SALES_WON)
+            ->whereNotNull('won_at');
+    }
+
+    protected function salesStatusLabel(): Attribute
+    {
+        return Attribute::get(fn (): string => self::SALES_STATUS_LABELS[$this->sales_status]
+            ?? self::SALES_STATUS_LABELS[self::SALES_FOLLOWING]);
     }
 
     protected function highlights(): Attribute
