@@ -9,6 +9,7 @@ Route::middleware('auth')->group(function (): void {
     Route::post('/quotes', [QuoteController::class, 'store'])->name('quotes.store');
     Route::get('/quotes/{quote}/copy/edit', [QuoteController::class, 'copyEdit'])->name('quotes.copy.edit');
     Route::post('/quotes/{quote}/copy/store', [QuoteController::class, 'storeCopy'])->name('quotes.copy.store');
+    Route::patch('/quotes/{quote}/sales-status', [QuoteController::class, 'updateSalesStatus'])->name('quotes.sales-status');
     Route::get('/quotes/{quote}', [QuoteController::class, 'show'])->name('quotes.show');
     Route::get('/quotes/{quote}/edit', [QuoteController::class, 'edit'])->name('quotes.edit');
     Route::put('/quotes/{quote}', [QuoteController::class, 'update'])->name('quotes.update');

@@ -45,6 +45,21 @@ class QuoteManager
         });
     }
 
+    public function updateSalesStatus(Quote $quote, string $salesStatus): Quote
+    {
+        return DB::transaction(function () use ($quote, $salesStatus): Quote {
+            if ($quote->sales_status === $salesStatus) {
+                return $quote;
+            }
+
+            $quote->sales_status = $salesStatus;
+            $quote->won_at = $salesStatus === Quote::SALES_WON ? now() : null;
+            $quote->save();
+
+            return $quote->refresh();
+        });
+    }
+
     /** @param array<string, mixed> $data */
     private function persist(Quote $quote, array $data): Quote
     {
