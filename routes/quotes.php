@@ -1,10 +1,12 @@
 <?php
 
 use App\Http\Controllers\QuoteController;
+use App\Http\Controllers\WonQuoteController;
 use Illuminate\Support\Facades\Route;
 
 Route::middleware('auth')->group(function (): void {
     Route::get('/quotes', [QuoteController::class, 'index'])->name('quotes.index');
+    Route::get('/won-quotes', [WonQuoteController::class, 'index'])->name('quotes.won');
     Route::get('/quotes/create', [QuoteController::class, 'create'])->name('quotes.create');
     Route::post('/quotes', [QuoteController::class, 'store'])->name('quotes.store');
     Route::get('/quotes/{quote}/copy/edit', [QuoteController::class, 'copyEdit'])->name('quotes.copy.edit');

@@ -4,6 +4,7 @@ namespace Tests\Feature\Quotes;
 
 use App\Models\Quote;
 use App\Models\User;
+use App\Services\QuoteManager;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Carbon;
 use Tests\TestCase;
@@ -131,6 +132,44 @@ class QuoteSalesStatusTest extends TestCase
         ]);
     }
 
+    public function test_regular_quote_update_cannot_overwrite_sales_transition_fields(): void
+    {
+        $owner = User::factory()->create();
+        $wonAt = Carbon::create(2026, 8, 10, 9, 0, 0, config('app.timezone'));
+        $quote = Quote::query()->create($this->quoteAttributes([
+            'created_by' => $owner->id,
+            'sales_status' => Quote::SALES_WON,
+            'won_at' => $wonAt,
+        ]));
+
+        app(QuoteManager::class)->update($quote, $this->managerPayload([
+            'sales_status' => Quote::SALES_OTHER,
+            'won_at' => null,
+        ]));
+
+        $quote->refresh();
+        $this->assertSame(Quote::SALES_WON, $quote->sales_status);
+        $this->assertTrue($quote->won_at->equalTo($wonAt));
+    }
+
+    public function test_regular_create_and_copy_always_start_in_following_sales_state(): void
+    {
+        $owner = User::factory()->create();
+        $manager = app(QuoteManager::class);
+        $spoofedSalesFields = [
+            'sales_status' => Quote::SALES_WON,
+            'won_at' => now(),
+        ];
+
+        $created = $manager->create($this->managerPayload($spoofedSalesFields), $owner);
+        $copy = $manager->createCopy($created, $this->managerPayload($spoofedSalesFields), $owner);
+
+        foreach ([$created, $copy] as $quote) {
+            $this->assertSame(Quote::SALES_FOLLOWING, $quote->sales_status);
+            $this->assertNull($quote->won_at);
+        }
+    }
+
     /** @return array<string, mixed> */
     private function quoteAttributes(array $overrides = []): array
     {
@@ -147,6 +186,30 @@ class QuoteSalesStatusTest extends TestCase
             'total_amount' => 24984.2,
             'per_person_amount' => 832.81,
             'status' => 'historical',
+        ], $overrides);
+    }
+
+    /** @return array<string, mixed> */
+    private function managerPayload(array $overrides = []): array
+    {
+        return array_merge([
+            'title' => 'Managed quote',
+            'customer_title' => 'Customer',
+            'destination' => 'Huizhou',
+            'year' => 2026,
+            'month' => 8,
+            'duration_days' => 1,
+            'nights' => 0,
+            'people_count' => 20,
+            'groups' => [[
+                'name' => 'DAY 01',
+                'type' => 'day',
+                'items' => [[
+                    'name' => 'Activity',
+                    'quantity' => 1,
+                    'unit_price' => 1000,
+                ]],
+            ]],
         ], $overrides);
     }
 }

@@ -172,6 +172,48 @@ class QuoteFilterTest extends TestCase
         $response->assertDontSeeText('1天0夜');
     }
 
+    public function test_history_list_shows_owner_first_and_allows_the_owner_to_change_sales_status(): void
+    {
+        $owner = User::factory()->create([
+            'name' => '陈小丽',
+            'role' => 'employee',
+            'is_active' => true,
+        ]);
+        $quote = $this->quote($owner, ['title' => '惠州海边团建']);
+
+        $response = $this->actingAs($owner)->get(route('quotes.index'));
+
+        $response->assertOk();
+        $response->assertSeeInOrder(['报价人', '报价名称']);
+        $response->assertSeeText('陈小丽');
+        $response->assertSeeText('跟进中');
+        $response->assertSee('action="'.route('quotes.sales-status', $quote).'"', false);
+        $response->assertSee('name="sales_status"', false);
+    }
+
+    public function test_employee_only_sees_the_status_label_for_another_users_history_quote(): void
+    {
+        $owner = User::factory()->create([
+            'username' => fake()->unique()->userName(),
+            'role' => 'employee',
+            'is_active' => true,
+        ]);
+        $employee = User::factory()->create([
+            'username' => fake()->unique()->userName(),
+            'role' => 'employee',
+            'is_active' => true,
+        ]);
+        $quote = $this->quote($owner, []);
+
+        $response = $this->actingAs($employee)->get(route('quotes.index'));
+
+        $response->assertOk();
+        $response->assertSeeText('跟进中');
+        $response->assertSee('class="sales-status-badge following"', false);
+        $response->assertDontSee('action="'.route('quotes.sales-status', $quote).'"', false);
+        $response->assertDontSee('name="sales_status"', false);
+    }
+
     public function test_admin_sees_the_delete_action_on_the_historical_quote_list(): void
     {
         $owner = User::factory()->create([

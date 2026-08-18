@@ -53,8 +53,8 @@
         <span class="record-count">共 {{ method_exists($quoteRows, 'total') ? $quoteRows->total() : count($quoteRows) }} 份</span>
     </header>
     <div class="data-table-wrap">
-        <table class="data-table quote-library-table">
-            <thead><tr><th>报价名称</th><th>年月</th><th>目的地</th><th>行程</th><th>人数</th><th>人均</th><th>总价</th><th>主要项目</th><th class="actions-cell">操作</th></tr></thead>
+        <table class="data-table quote-library-table history-quotes-table">
+            <thead><tr><th>报价人</th><th>报价名称</th><th>年月</th><th>目的地</th><th>行程</th><th>人数</th><th>人均</th><th>总价</th><th>主要项目</th><th>跟进状态</th><th class="actions-cell">操作</th></tr></thead>
             <tbody>
             @forelse($quoteRows as $quote)
                 @php
@@ -64,7 +64,8 @@
                     if (is_array($summary)) $summary = implode('、', $summary);
                 @endphp
                 <tr>
-                    <td><span class="table-title">{{ $quote->title ?? $quote->customer_title ?? '未命名报价' }}</span><span class="table-sub">{{ $quote->customer_name ?? $quote->source_file ?? '' }}</span></td>
+                    <td class="owner-cell">{{ $quote->createdBy?->name ?? $quote->createdBy?->username ?? '未知账号' }}</td>
+                    <td><span class="table-title" title="{{ $quote->title ?? $quote->customer_title ?? '未命名报价' }}">{{ $quote->title ?? $quote->customer_title ?? '未命名报价' }}</span><span class="table-sub">{{ $quote->customer_name ?? $quote->source_file ?? '' }}</span></td>
                     <td>{{ $quote->year ?? optional($quote->quote_date ?? null)->format('Y') ?? '-' }}.{{ str_pad((string) ($quote->month ?? optional($quote->quote_date ?? null)->format('n') ?? '-'), 2, '0', STR_PAD_LEFT) }}</td>
                     <td>{{ $quote->destination ?? '-' }}</td>
                     <td>{{ $quote->trip_type }}</td>
@@ -72,6 +73,7 @@
                     <td class="money">¥{{ number_format($people > 0 ? $total / $people : 0, 0) }}</td>
                     <td class="money strong">¥{{ number_format($total, 2) }}</td>
                     <td class="summary-cell" title="{{ $summary }}">{{ $summary ?: '查看详情了解行程项目' }}</td>
+                    <td>@include('quotes._sales_status', ['quote' => $quote])</td>
                     <td class="actions-cell"><div class="row-actions">
                         <a class="icon-btn" href="{{ Route::has('quotes.show') ? route('quotes.show', $quote) : url('/quotes/'.$quote->id) }}" data-tooltip="查看报价详情" aria-label="查看报价详情"><x-icon name="eye" /></a>
                         <a class="icon-btn" href="{{ route('quotes.preview', $quote) }}" data-tooltip="直接使用报价" aria-label="直接使用报价"><x-icon name="copy" /></a>
@@ -82,7 +84,7 @@
                     </div></td>
                 </tr>
             @empty
-                <tr><td colspan="9"><div class="empty-state"><x-icon name="search" /><strong>没有找到匹配的历史报价</strong><span>调整筛选条件，或新增一份历史报价。</span></div></td></tr>
+                <tr><td colspan="11"><div class="empty-state"><x-icon name="search" /><strong>没有找到匹配的历史报价</strong><span>调整筛选条件，或新增一份历史报价。</span></div></td></tr>
             @endforelse
             </tbody>
         </table>

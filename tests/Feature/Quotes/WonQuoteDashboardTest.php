@@ -76,6 +76,29 @@ class WonQuoteDashboardTest extends TestCase
         Carbon::setTestNow();
     }
 
+    public function test_authenticated_user_can_view_the_won_page_with_metrics_and_creator_filter(): void
+    {
+        Carbon::setTestNow(Carbon::create(2026, 8, 18, 12, 0, 0, config('app.timezone')));
+        $owner = User::factory()->create(['name' => '陈小丽', 'is_active' => true]);
+        $this->quote($owner, '已成交惠州团建', '惠州', 'historical', '2026-08-02', '2026-08-05', 18000);
+
+        $response = $this->actingAs($owner)->get(route('quotes.won', [
+            'report_month' => '2026-08',
+            'creator_id' => $owner->id,
+        ]));
+
+        $response->assertOk();
+        $response->assertViewHas('summary', [
+            'issued_count' => 1,
+            'won_count' => 1,
+            'won_amount' => 18000.0,
+        ]);
+        $response->assertSeeText('已成交惠州团建');
+        $response->assertSeeText('陈小丽');
+        $response->assertSeeText('本月成交');
+        Carbon::setTestNow();
+    }
+
     private function quote(
         User $owner,
         string $title,
