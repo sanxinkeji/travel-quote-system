@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Models\Quote;
+use App\Models\User;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Builder;
 
@@ -26,8 +27,12 @@ class QuoteSalesDashboard
 
     /** @param array{start: CarbonImmutable, end: CarbonImmutable} $period */
     /** @return array{issued_count: int, won_count: int, won_amount: float} */
-    public function summary(array $period, ?int $creatorId = null): array
+    public function summary(array $period, ?int $creatorId = null, ?User $viewer = null): array
     {
+        if ($viewer && ! $viewer->isAdmin()) {
+            $creatorId = $viewer->id;
+        }
+
         $issued = Quote::query()->historical()
             ->when($creatorId, fn (Builder $query, int $id) => $query->where('created_by', $id))
             ->whereBetween('created_at', [$period['start'], $period['end']])

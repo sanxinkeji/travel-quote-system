@@ -99,6 +99,35 @@ class WonQuoteDashboardTest extends TestCase
         Carbon::setTestNow();
     }
 
+    public function test_employee_won_page_is_scoped_to_their_own_quotes_and_creator_option(): void
+    {
+        Carbon::setTestNow(Carbon::create(2026, 8, 18, 12, 0, 0, config('app.timezone')));
+        $owner = User::factory()->create(['name' => '陈小丽', 'is_active' => true]);
+        $other = User::factory()->create(['name' => '李明', 'is_active' => true]);
+        $this->quote($owner, '员工自己的成交报价', '惠州', 'historical', '2026-08-02', '2026-08-05', 18000);
+        $this->quote($other, '其他员工的成交报价', '清远', 'historical', '2026-08-04', '2026-08-10', 24000);
+
+        $response = $this->actingAs($owner)->get(route('quotes.won', [
+            'report_month' => '2026-08',
+        ]));
+
+        $response->assertOk();
+        $response->assertViewHas('quotes', function ($quotes): bool {
+            return $quotes->getCollection()->pluck('title')->all() === ['员工自己的成交报价'];
+        });
+        $response->assertViewHas('summary', [
+            'issued_count' => 1,
+            'won_count' => 1,
+            'won_amount' => 18000.0,
+        ]);
+        $response->assertViewHas('creators', function ($creators) use ($owner): bool {
+            return $creators->pluck('id')->all() === [$owner->id];
+        });
+        $response->assertSeeText('员工自己的成交报价');
+        $response->assertDontSeeText('其他员工的成交报价');
+        Carbon::setTestNow();
+    }
+
     private function quote(
         User $owner,
         string $title,

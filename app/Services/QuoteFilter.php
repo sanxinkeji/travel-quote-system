@@ -46,12 +46,14 @@ class QuoteFilter
         );
     }
 
-    public function won(array $filters, CarbonImmutable $start, CarbonImmutable $end): Builder
+    public function won(array $filters, CarbonImmutable $start, CarbonImmutable $end, ?User $viewer = null): Builder
     {
         return $this->apply(
             Quote::query()->historical()->won()
                 ->with(['createdBy', 'groups.items'])
                 ->whereBetween('won_at', [$start, $end])
+                ->when($viewer && ! $viewer->isAdmin(),
+                    fn (Builder $query) => $query->where('created_by', $viewer->id))
                 ->when($this->integer($filters['creator_id'] ?? null),
                     fn (Builder $query, int $creatorId) => $query->where('created_by', $creatorId)),
             $filters
