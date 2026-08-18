@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Http\Requests\StoreQuoteCopyRequest;
 use App\Http\Requests\StoreQuoteRequest;
 use App\Http\Requests\UpdateQuoteRequest;
+use App\Http\Requests\UpdateQuoteSalesStatusRequest;
 use App\Models\AuditLog;
 use App\Models\Quote;
 use App\Services\QuoteFilter;
@@ -124,6 +125,32 @@ class QuoteController extends Controller
         $route = $request->input('after_save') === 'preview' ? 'quotes.preview' : 'quotes.show';
 
         return redirect()->route($route, $quote)->with('success', '报价已更新。');
+    }
+
+    public function updateSalesStatus(
+        UpdateQuoteSalesStatusRequest $request,
+        Quote $quote,
+        QuoteManager $manager
+    ): RedirectResponse {
+        $oldStatus = $quote->sales_status;
+        $oldWonAt = $quote->won_at?->toISOString();
+        $manager->updateSalesStatus($quote, $request->validated('sales_status'));
+
+        if ($oldStatus !== $quote->sales_status) {
+            AuditLog::query()->create([
+                'actor_user_id' => $request->user()->id,
+                'action' => 'quote.sales_status_changed',
+                'subject_type' => Quote::class,
+                'subject_id' => $quote->id,
+                'changes' => [
+                    'sales_status' => ['old' => $oldStatus, 'new' => $quote->sales_status],
+                    'won_at' => ['old' => $oldWonAt, 'new' => $quote->won_at?->toISOString()],
+                ],
+                'ip_address' => $request->ip(),
+            ]);
+        }
+
+        return back()->with('success', '跟进状态已更新。');
     }
 
     public function destroy(Request $request, Quote $quote): RedirectResponse

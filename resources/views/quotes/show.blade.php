@@ -27,6 +27,7 @@
     <div><span>行程类型</span><strong>{{ $quote->trip_type }}</strong></div>
     <div><span>报价人数</span><strong>{{ $quote->people_count ?? 0 }}人</strong></div>
     <div><span>创建人</span><strong>{{ $quote->createdBy?->name ?? $quote->creator?->name ?? '-' }}</strong></div>
+    <div class="detail-sales-status"><span>跟进状态</span>@include('quotes._sales_status', ['quote' => $quote])</div>
     <div><span>更新时间</span><strong>{{ $quote->updated_at?->format('Y-m-d H:i') ?? '-' }}</strong></div>
 </section>
 

@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Models\Quote;
 use App\Models\User;
+use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Builder;
 
 class QuoteFilter
@@ -41,6 +42,18 @@ class QuoteFilter
             Quote::query()->historical()->with(['createdBy', 'groups.items'])
                 ->when($this->scope($filters['scope'] ?? null) === 'mine',
                     fn (Builder $query) => $query->where('created_by', $viewer->id)),
+            $filters
+        );
+    }
+
+    public function won(array $filters, CarbonImmutable $start, CarbonImmutable $end): Builder
+    {
+        return $this->apply(
+            Quote::query()->historical()->won()
+                ->with(['createdBy', 'groups.items'])
+                ->whereBetween('won_at', [$start, $end])
+                ->when($this->integer($filters['creator_id'] ?? null),
+                    fn (Builder $query, int $creatorId) => $query->where('created_by', $creatorId)),
             $filters
         );
     }

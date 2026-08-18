@@ -10,7 +10,7 @@ class QuoteWorkflowUiTest extends TestCase
     {
         $index = file_get_contents(resource_path('views/quotes/index.blade.php'));
 
-        $this->assertStringContainsString('<span class="table-title">', $index);
+        $this->assertStringContainsString('<span class="table-title" title=', $index);
         $this->assertStringNotContainsString('<a class="table-title"', $index);
         $this->assertStringContainsString("route('quotes.preview', \$quote)", $index);
         $this->assertStringContainsString("route('quotes.copy.edit', \$quote)", $index);

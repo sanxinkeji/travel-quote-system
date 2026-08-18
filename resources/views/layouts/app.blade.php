@@ -47,9 +47,13 @@
         <aside class="sidebar" aria-label="主导航">
             <div class="nav-section">
                 <span class="nav-label">工作台</span>
-                <a class="nav-item {{ request()->routeIs('quotes.*') ? 'active' : '' }}" href="{{ Route::has('quotes.index') ? route('quotes.index') : url('/quotes') }}">
+                <a class="nav-item {{ request()->routeIs(['quotes.index', 'quotes.create', 'quotes.show', 'quotes.edit', 'quotes.preview', 'quotes.copy.*']) ? 'active' : '' }}" href="{{ Route::has('quotes.index') ? route('quotes.index') : url('/quotes') }}">
                     <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.2-3.2M8 11h6M11 8v6"/></svg>
                     <span>历史报价库</span>
+                </a>
+                <a class="nav-item {{ request()->routeIs('quotes.won') ? 'active' : '' }}" href="{{ Route::has('quotes.won') ? route('quotes.won') : url('/won-quotes') }}">
+                    <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="m8 12 2.5 2.5L16 9"/></svg>
+                    <span>已成交报价</span>
                 </a>
                 @if(auth()->user()?->role === 'admin')
                     <a class="nav-item {{ request()->routeIs('users.*') ? 'active' : '' }}" href="{{ Route::has('users.index') ? route('users.index') : url('/users') }}">

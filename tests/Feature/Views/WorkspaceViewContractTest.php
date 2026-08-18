@@ -13,6 +13,7 @@ class WorkspaceViewContractTest extends TestCase
             ['layouts/app.blade.php'],
             ['auth/login.blade.php'],
             ['quotes/index.blade.php'],
+            ['quotes/won.blade.php'],
             ['quotes/show.blade.php'],
             ['quotes/edit.blade.php'],
             ['quotes/preview.blade.php'],
@@ -34,6 +35,8 @@ class WorkspaceViewContractTest extends TestCase
 
         $this->assertStringContainsString('历史报价库', $layout);
         $this->assertStringContainsString('用户管理', $layout);
+        $this->assertStringContainsString('已成交报价', $layout);
+        $this->assertStringContainsString("routeIs('quotes.won')", $layout);
         $this->assertStringContainsString("role === 'admin'", $layout);
         $this->assertStringNotContainsString('报价详情</', $layout);
         $this->assertStringNotContainsString('报价编辑</', $layout);
@@ -229,6 +232,82 @@ class WorkspaceViewContractTest extends TestCase
         $this->assertStringContainsString('aria-current', $index);
         $this->assertStringContainsString('.quote-scope-switch', $styles);
         $this->assertStringContainsString('.quote-scope-option.active', $styles);
+    }
+
+    public function test_won_quote_view_exposes_report_month_metrics_and_shared_filters(): void
+    {
+        $won = file_get_contents(resource_path('views/quotes/won.blade.php'));
+
+        foreach (['name="report_month"', 'name="creator_id"', '本月出报价', '本月成交', '成交额',
+            'name="year"', 'name="month"', 'name="destination"', 'name="duration"',
+            'name="people_range"', 'name="budget_min"', 'name="budget_max"', 'name="keyword"', '成交日期'] as $marker) {
+            $this->assertStringContainsString($marker, $won);
+        }
+    }
+
+    public function test_sales_status_partial_closes_its_editable_form(): void
+    {
+        $partial = file_get_contents(resource_path('views/quotes/_sales_status.blade.php'));
+
+        $this->assertSame(1, substr_count($partial, '<form '));
+        $this->assertSame(1, substr_count($partial, '</form>'));
+    }
+
+    public function test_quote_library_tables_keep_the_compact_layout_contract(): void
+    {
+        $index = file_get_contents(resource_path('views/quotes/index.blade.php'));
+        $won = file_get_contents(resource_path('views/quotes/won.blade.php'));
+        $styles = file_get_contents(public_path('css/workspace.css'));
+
+        $title = '<span class="table-title" title="{{ $quote->title ?? $quote->customer_title ?? \'未命名报价\' }}">';
+        $this->assertStringContainsString($title, $index);
+        $this->assertStringContainsString($title, $won);
+        $this->assertStringContainsString('class="data-table quote-library-table history-quotes-table"', $index);
+
+        foreach ([10, 14, 6, 6, 8, 5, 6, 9, 13, 9, 14] as $column => $width) {
+            $this->assertStringContainsString(
+                '.history-quotes-table th:nth-child('.($column + 1).') { width: '.$width.'%; }',
+                $styles
+            );
+        }
+
+        foreach ([10, 14, 6, 6, 8, 5, 6, 9, 14, 8, 14] as $column => $width) {
+            $this->assertStringContainsString(
+                '.won-quotes-table th:nth-child('.($column + 1).') { width: '.$width.'%; }',
+                $styles
+            );
+        }
+
+        $this->assertStringContainsString('<th>成交额</th><th>主要项目</th><th>成交日期</th><th class="actions-cell">操作</th>', $won);
+
+        $this->assertStringContainsString('.history-quotes-table td:nth-child(10) { overflow: visible; }', $styles);
+        $this->assertStringNotContainsString('.quote-library-table td:nth-child(10) { overflow: visible; }', $styles);
+        $this->assertStringContainsString('.detail-meta-strip { grid-template-columns: repeat(7, 1fr); }', $styles);
+        $this->assertStringContainsString('padding: 4px 22px 4px 8px;', $styles);
+        $this->assertStringContainsString('min-width: 88px;', $styles);
+    }
+
+    public function test_quote_library_tables_have_a_compact_no_page_overflow_mobile_layout(): void
+    {
+        $styles = file_get_contents(public_path('css/workspace.css'));
+
+        $this->assertStringContainsString('.quote-library-table { min-width: 0; table-layout: fixed; width: 100%; }', $styles);
+        $this->assertStringContainsString('.history-quotes-table th:nth-child(3), .history-quotes-table td:nth-child(3)', $styles);
+        $this->assertStringContainsString('.won-quotes-table th:nth-child(3), .won-quotes-table td:nth-child(3)', $styles);
+        $this->assertStringContainsString('.quote-library-table .row-actions { gap: 2px; }', $styles);
+        $this->assertStringContainsString('.quote-library-table .row-actions .icon-btn { width: 24px; height: 24px; }', $styles);
+    }
+
+    public function test_quote_library_tables_reserve_status_and_actions_space_at_tablet_widths(): void
+    {
+        $styles = file_get_contents(public_path('css/workspace.css'));
+
+        $this->assertStringContainsString('@media (min-width: 861px) and (max-width: 1180px)', $styles);
+        $this->assertStringContainsString('.history-quotes-table th:nth-child(10) { width: 14%; }', $styles);
+        $this->assertStringContainsString('.history-quotes-table th:nth-child(11) { width: 22%; }', $styles);
+        $this->assertStringContainsString('.won-quotes-table th:nth-child(9) { width: 10%; }', $styles);
+        $this->assertStringContainsString('.won-quotes-table th:nth-child(10) { width: 12%; }', $styles);
+        $this->assertStringContainsString('.won-quotes-table th:nth-child(11) { width: 22%; }', $styles);
     }
 
     public function test_spreadsheet_export_contains_document_metadata_details_and_totals(): void

@@ -17,6 +17,8 @@ class QuoteManager
         return DB::transaction(function () use ($data, $creator): Quote {
             $quote = new Quote;
             $quote->created_by = $creator->id;
+            $quote->sales_status = Quote::SALES_FOLLOWING;
+            $quote->won_at = null;
 
             return $this->persist($quote, $data);
         });
@@ -39,9 +41,26 @@ class QuoteManager
             $copy = new Quote;
             $copy->created_by = $creator->id;
             $copy->source_quote_id = $source->id;
+            $copy->sales_status = Quote::SALES_FOLLOWING;
+            $copy->won_at = null;
             $data['status'] = 'historical';
 
             return $this->persist($copy, $data);
+        });
+    }
+
+    public function updateSalesStatus(Quote $quote, string $salesStatus): Quote
+    {
+        return DB::transaction(function () use ($quote, $salesStatus): Quote {
+            if ($quote->sales_status === $salesStatus) {
+                return $quote;
+            }
+
+            $quote->sales_status = $salesStatus;
+            $quote->won_at = $salesStatus === Quote::SALES_WON ? now() : null;
+            $quote->save();
+
+            return $quote->refresh();
         });
     }
 
@@ -49,7 +68,13 @@ class QuoteManager
     private function persist(Quote $quote, array $data): Quote
     {
         $calculation = $this->calculator->calculate($data['groups'], (int) $data['people_count']);
-        $quote->fill(Arr::except($data, ['groups', 'total_amount', 'per_person_amount']));
+        $quote->fill(Arr::except($data, [
+            'groups',
+            'total_amount',
+            'per_person_amount',
+            'sales_status',
+            'won_at',
+        ]));
         $quote->total_amount = $calculation['total'];
         $quote->per_person_amount = $calculation['per_person'];
         $quote->budget_per_person = $calculation['per_person'];
